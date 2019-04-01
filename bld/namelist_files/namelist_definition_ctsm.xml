@@ -889,6 +889,11 @@ If TRUE, urban traffic flux will be activated (Currently NOT implemented).
 1 = prognostic calculation of interior building temp (clm5_0)
 </entry>
 
+<entry id="urban_properties" type="char*256" category="datasets"
+       input_pathname="abs" group="clmu_inparm" valid_values="" >
+urban properties data file name
+</entry>
+
 <entry id="calc_human_stress_indices" type="char*16" category="clm_physics"
        group="clm_humanindex_inparm" valid_values="ALL,FAST,NONE" >
 Human heat stress indices:

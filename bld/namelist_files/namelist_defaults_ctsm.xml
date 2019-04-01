@@ -120,6 +120,14 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <!-- Default urban traffic flux -->
 <urban_traffic>.false.</urban_traffic>
 
+
+<!-- Urban properties dataset -->
+<!--  ***********  Resolution independent:   ***********  -->
+<!-- NOTE THAT THE CLM5_0 FILE WILL NEED TO BE UPDATED TO THE LINE BELOW ONCE PR# 591 IS ON MASTER
+<!-- <urban_properties phys="clm5_0">lnd/clm2/rawdata/mksrf_urban_0.05x0.05_simyr2000.c170724.nc</urban_properties> -->
+<urban_properties phys="clm5_0">lnd/clm2/rawdata/mksrf_urban_0.05x0.05_simyr2000.c120621.nc</urban_properties>
+<urban_properties phys="clm4_5">lnd/clm2/rawdata/mksrf_urban_0.05x0.05_simyr2000.c120621.nc</urban_properties>
+
 <!-- Soil state settings -->
 <organic_frac_squared phys="clm4_5" >.true.</organic_frac_squared>
 <organic_frac_squared phys="clm5_0" >.false.</organic_frac_squared>

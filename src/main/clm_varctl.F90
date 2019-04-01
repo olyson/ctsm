@@ -90,8 +90,9 @@ module clm_varctl
   character(len=fname_len), public :: fatmlndfrc = ' '        ! lnd frac file on atm grid
   character(len=fname_len), public :: paramfile  = ' '        ! ASCII data file with PFT physiological constants
   character(len=fname_len), public :: nrevsn     = ' '        ! restart data file name for branch run
-  character(len=fname_len), public :: fsnowoptics  = ' '      ! snow optical properties file name
-  character(len=fname_len), public :: fsnowaging   = ' '      ! snow aging parameters file name
+  character(len=fname_len), public :: fsnowoptics      = ' '  ! snow optical properties file name
+  character(len=fname_len), public :: fsnowaging       = ' '  ! snow aging parameters file name
+  character(len=fname_len), public :: urban_properties = ' '  ! urban properties file name
 
   !----------------------------------------------------------
   ! Flag to read ndep rather than obtain it from coupler

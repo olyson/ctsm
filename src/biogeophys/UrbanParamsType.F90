@@ -9,9 +9,11 @@ module UrbanParamsType
   use shr_log_mod  , only : errMsg => shr_log_errMsg
   use abortutils   , only : endrun
   use decompMod    , only : bounds_type
-  use clm_varctl   , only : iulog, fsurdat
+  use clm_varctl   , only : iulog, urban_properties, fsurdat
   use clm_varcon   , only : namel, grlnd, spval
   use LandunitType , only : lun                
+  use shr_sys_mod  , only : shr_sys_flush
+  use spmdMod      , only : masterproc
   !
   implicit none
   save
@@ -23,6 +25,7 @@ module UrbanParamsType
   public  :: CheckUrban        ! Check validity of urban points
   public  :: IsSimpleBuildTemp ! If using the simple building temperature method
   public  :: IsProgBuildTemp   ! If using the prognostic building temperature method
+  public  :: mkurbanpar        ! Make urban parameter data
   !
   ! !PRIVATE TYPE
   type urbinp_type
@@ -108,6 +111,13 @@ module UrbanParamsType
   integer, parameter, private :: BUILDING_TEMP_METHOD_SIMPLE = 0       ! Simple method introduced in CLM4.5
   integer, parameter, private :: BUILDING_TEMP_METHOD_PROG   = 1       ! Prognostic method introduced in CLM5.0
   integer, private :: building_temp_method = BUILDING_TEMP_METHOD_PROG ! Method to calculate the building temperature
+
+  ! flag to indicate nodata for index variables in output file:
+  integer, parameter :: index_nodata = 0
+  character(len=*), parameter :: modname = 'UrbanParamsType'
+
+  private :: index_nodata
+  private :: modname
 
   character(len=*), parameter, private :: sourcefile = &
        __FILE__
@@ -372,10 +382,9 @@ contains
     ! Allocate memory and read in urban input data
     !
     ! !USES:
-    use clm_varpar      , only : numrad, nlevurb
+    use clm_varpar      , only : numrad, numsolar, nlevurb
     use landunit_varcon , only : numurbl
     use fileutils       , only : getavu, relavu, getfil, opnfil
-    use spmdMod         , only : masterproc
     use domainMod       , only : ldomain
     use ncdio_pio       , only : file_desc_t, ncd_io, ncd_inqvdlen, ncd_inqfdims 
     use ncdio_pio       , only : ncd_pio_openfile, ncd_pio_closefile, ncd_inqdid, ncd_inqdlen
@@ -386,17 +395,20 @@ contains
     character(len=*), intent(in) :: mode
     !
     ! !LOCAL VARIABLES:
-    character(len=256) :: locfn      ! local file name
+    character(len=256) :: locfn_fsurdat ! local file name for surface dataset
+    character(len=256) :: locfn_uprop   ! local file name for urban properties dataset
     type(file_desc_t)  :: ncid       ! netcdf id
     integer :: dimid                 ! netCDF id
-    integer :: nw,n,k,i,j,ni,nj,ns   ! indices
+    integer :: nw,n,k,i,j,ns,g       ! indices
     integer :: nlevurb_i             ! input grid: number of urban vertical levels
     integer :: numrad_i              ! input grid: number of solar bands (VIS/NIR)
     integer :: numurbl_i             ! input grid: number of urban landunits
     integer :: ier,ret               ! error status
-    logical :: isgrid2d              ! true => file is 2d 
     logical :: readvar               ! true => variable is on dataset
-    logical :: has_numurbl           ! true => numurbl dimension is on dataset
+    logical :: has_density_class     ! true => density_class dimension is on dataset
+    logical :: urban_skip_abort_on_invalid_data_check
+    integer ,pointer :: urban_region_id(:)
+    real(r8),pointer :: urbn_classes_g(:,:)  ! percent cover of each urban class, as % of grid cell
     character(len=32) :: subname = 'UrbanInput' ! subroutine name
     !-----------------------------------------------------------------------
 
@@ -404,30 +416,78 @@ contains
 
     if (mode == 'initialize') then
 
-       ! Read urban data
-       
-       if (masterproc) then
-          write(iulog,*)' Reading in urban input data from fsurdat file ...'
-       end if
-       
-       call getfil (fsurdat, locfn, 0)
-       call ncd_pio_openfile (ncid, locfn, 0)
+       urban_skip_abort_on_invalid_data_check = .false.
+
+       ns = endg - begg + 1
+
+       allocate(urban_region_id(begg:endg))
+       allocate(urbn_classes_g(begg:endg,numurbl))
+
+       ! Read urban_region_id from surface dataset
 
        if (masterproc) then
-          write(iulog,*) subname,trim(fsurdat)
+          write(iulog,*)' Reading in URBAN_REGION_ID and PCT_URBAN from fsurdat file ...'
        end if
+      
+       if (masterproc) then
+          write(iulog,*) 'Attempting to read surface boundary data .....'
+          if (fsurdat == ' ') then
+             write(iulog,*)'fsurdat must be specified'
+             call endrun(msg=errMsg(sourcefile, __LINE__))
+          end if
+       end if
+
+       call getfil( fsurdat, locfn_fsurdat, 0 )
+       call ncd_pio_openfile (ncid, trim(locfn_fsurdat), 0)
+
+       call ncd_io(ncid=ncid, varname='URBAN_REGION_ID', flag='read', data=urban_region_id, &
+            dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) call endrun( msg= ' ERROR: URBAN_REGION_ID NOT on surfdata file'//errMsg(sourcefile, __LINE__))
+
+       call ncd_io(ncid=ncid, varname='PCT_URBAN', flag='read', data=urbn_classes_g, &
+            dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) call endrun( msg= ' ERROR: PCT_URBAN NOT on surfdata file'//errMsg(sourcefile, __LINE__))
+
+       call ncd_pio_closefile(ncid)
+
+       ! Read urban input data from urban properties file
+       
+       if (masterproc) then
+          write(iulog,*)' Reading in urban input data from urban_properties file ...'
+          call shr_sys_flush(iulog)
+       end if
+
+       if (masterproc) then
+          write(iulog,*) 'Attempting to read urban properties data .....'
+          if (urban_properties == ' ') then
+             write(iulog,*)'urban_properties must be specified'
+             call endrun(msg=errMsg(sourcefile, __LINE__))
+          end if
+       end if
+       
+       call getfil (urban_properties, locfn_uprop, 0)
+       call ncd_pio_openfile (ncid, locfn_uprop, 0)
 
        ! Check whether this file has new-format urban data
-       call ncd_inqdid(ncid, 'numurbl', dimid, dimexist=has_numurbl)
+       call ncd_inqdid(ncid, 'density_class', dimid, dimexist=has_density_class)
 
-       ! If file doesn't have numurbl, then it is old-format urban;
+       ! If file doesn't have density_class, then it is old-format urban;
        ! in this case, set nlevurb to zero
-       if (.not. has_numurbl) then
+       if (.not. has_density_class) then
          nlevurb = 0
          if (masterproc) write(iulog,*)'PCT_URBAN is not multi-density, nlevurb set to 0'
        end if
 
        if ( nlevurb == 0 ) return
+
+       call ncd_inqdlen(ncid, dimid, numurbl_i)
+       if (numurbl_i /= numurbl) then
+          write(iulog,*)trim(subname)// ': parameter numurbl= ',numurbl, &
+               'does not equal input dataset density class= ',numurbl_i
+          call endrun(msg=errmsg(sourcefile, __LINE__))
+       endif
+
+       call ncd_pio_closefile(ncid)
 
        ! Allocate dynamic memory
        allocate(urbinp%canyon_hwr(begg:endg, numurbl), &  
@@ -462,203 +522,14 @@ contains
           call endrun(msg="Allocation error "//errmsg(sourcefile, __LINE__))
        endif
 
-       call ncd_inqfdims (ncid, isgrid2d, ni, nj, ns)
-       if (ldomain%ns /= ns .or. ldomain%ni /= ni .or. ldomain%nj /= nj) then
-          write(iulog,*)trim(subname), 'ldomain and input file do not match dims '
-          write(iulog,*)trim(subname), 'ldomain%ni,ni,= ',ldomain%ni,ni
-          write(iulog,*)trim(subname), 'ldomain%nj,nj,= ',ldomain%nj,nj
-          write(iulog,*)trim(subname), 'ldomain%ns,ns,= ',ldomain%ns,ns
-          call endrun(msg=errmsg(sourcefile, __LINE__))
-       end if
+       call mkurbanpar(datfname=urban_properties, region_o=urban_region_id, &
+           urbn_classes_gcell_o=urbn_classes_g, &
+           urban_skip_abort_on_invalid_data_check=urban_skip_abort_on_invalid_data_check) 
 
-       call ncd_inqdid(ncid, 'nlevurb', dimid)
-       call ncd_inqdlen(ncid, dimid, nlevurb_i)
-       if (nlevurb_i /= nlevurb) then
-          write(iulog,*)trim(subname)// ': parameter nlevurb= ',nlevurb, &
-               'does not equal input dataset nlevurb= ',nlevurb_i
-          call endrun(msg=errmsg(sourcefile, __LINE__))
-       endif
-
-       call ncd_inqdid(ncid, 'numrad', dimid)
-       call ncd_inqdlen(ncid, dimid, numrad_i)
-       if (numrad_i /= numrad) then
-          write(iulog,*)trim(subname)// ': parameter numrad= ',numrad, &
-               'does not equal input dataset numrad= ',numrad_i
-          call endrun(msg=errmsg(sourcefile, __LINE__))
-       endif
-       call ncd_inqdid(ncid, 'numurbl', dimid)
-       call ncd_inqdlen(ncid, dimid, numurbl_i)
-       if (numurbl_i /= numurbl) then
-          write(iulog,*)trim(subname)// ': parameter numurbl= ',numurbl, &
-               'does not equal input dataset numurbl= ',numurbl_i
-          call endrun(msg=errmsg(sourcefile, __LINE__))
-       endif
-       call ncd_io(ncid=ncid, varname='CANYON_HWR', flag='read', data=urbinp%canyon_hwr,&
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg='ERROR: CANYON_HWR NOT on fsurdat file '//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='WTLUNIT_ROOF', flag='read', data=urbinp%wtlunit_roof, &
-            dim1name=grlnd,  readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: WTLUNIT_ROOF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='WTROAD_PERV', flag='read', data=urbinp%wtroad_perv, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: WTROAD_PERV NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='EM_ROOF', flag='read', data=urbinp%em_roof, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: EM_ROOF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='EM_IMPROAD', flag='read', data=urbinp%em_improad, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: EM_IMPROAD NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='EM_PERROAD', flag='read', data=urbinp%em_perroad, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: EM_PERROAD NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='EM_WALL', flag='read', data=urbinp%em_wall, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: EM_WALL NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='HT_ROOF', flag='read', data=urbinp%ht_roof, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: HT_ROOF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='WIND_HGT_CANYON', flag='read', data=urbinp%wind_hgt_canyon, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: WIND_HGT_CANYON NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='THICK_WALL', flag='read', data=urbinp%thick_wall, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: THICK_WALL NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='THICK_ROOF', flag='read', data=urbinp%thick_roof, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: THICK_ROOF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='NLEV_IMPROAD', flag='read', data=urbinp%nlev_improad, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: NLEV_IMPROAD NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='T_BUILDING_MIN', flag='read', data=urbinp%t_building_min, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: T_BUILDING_MIN NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='ALB_IMPROAD_DIR', flag='read', data=urbinp%alb_improad_dir, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not.readvar) then
-          call endrun( msg=' ERROR: ALB_IMPROAD_DIR NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='ALB_IMPROAD_DIF', flag='read', data=urbinp%alb_improad_dif, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not.readvar) then
-          call endrun( msg=' ERROR: ALB_IMPROAD_DIF NOT on fsurdat file'//errmsg(sourcefile, __LINE__) )
-       end if
-
-       call ncd_io(ncid=ncid, varname='ALB_PERROAD_DIR', flag='read',data=urbinp%alb_perroad_dir, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: ALB_PERROAD_DIR NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='ALB_PERROAD_DIF', flag='read',data=urbinp%alb_perroad_dif, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: ALB_PERROAD_DIF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='ALB_ROOF_DIR', flag='read', data=urbinp%alb_roof_dir,  &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: ALB_ROOF_DIR NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='ALB_ROOF_DIF', flag='read', data=urbinp%alb_roof_dif,  &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: ALB_ROOF_DIF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='ALB_WALL_DIR', flag='read', data=urbinp%alb_wall_dir, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: ALB_WALL_DIR NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='ALB_WALL_DIF', flag='read', data=urbinp%alb_wall_dif, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: ALB_WALL_DIF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='TK_IMPROAD', flag='read', data=urbinp%tk_improad, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: TK_IMPROAD NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='TK_ROOF', flag='read', data=urbinp%tk_roof, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: TK_ROOF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='TK_WALL', flag='read', data=urbinp%tk_wall, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: TK_WALL NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='CV_IMPROAD', flag='read', data=urbinp%cv_improad, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: CV_IMPROAD NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='CV_ROOF', flag='read', data=urbinp%cv_roof, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: CV_ROOF NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_io(ncid=ncid, varname='CV_WALL', flag='read', data=urbinp%cv_wall, &
-            dim1name=grlnd, readvar=readvar)
-       if (.not. readvar) then
-          call endrun( msg=' ERROR: CV_WALL NOT on fsurdat file'//errmsg(sourcefile, __LINE__))
-       end if
-
-       call ncd_pio_closefile(ncid)
        if (masterproc) then
           write(iulog,*)' Sucessfully read urban input data' 
           write(iulog,*)
+          call shr_sys_flush(iulog)
        end if
 
     else if (mode == 'finalize') then
@@ -839,7 +710,6 @@ contains
     use spmdMod       , only : masterproc, mpicom
     use fileutils     , only : getavu, relavu, opnfil
     use shr_nl_mod    , only : shr_nl_find_group_name
-    use shr_mpi_mod   , only : shr_mpi_bcast
     implicit none
     !
     ! !ARGUMENTS:
@@ -850,7 +720,8 @@ contains
     integer :: unitn                ! unit for namelist file
     character(len=32) :: subname = 'UrbanReadNML'  ! subroutine name
 
-    namelist / clmu_inparm / urban_hac, urban_traffic, building_temp_method
+    namelist / clmu_inparm / urban_hac, urban_traffic, building_temp_method, &
+                             urban_properties
     !EOP
     !-----------------------------------------------------------------------
 
@@ -880,6 +751,7 @@ contains
     call shr_mpi_bcast(urban_hac,             mpicom)
     call shr_mpi_bcast(urban_traffic,         mpicom)
     call shr_mpi_bcast(building_temp_method,  mpicom)
+    call shr_mpi_bcast(urban_properties,      mpicom)
 
     !
     if (urban_traffic) then
@@ -891,10 +763,425 @@ contains
        write(iulog,*) '   urban air conditioning/heating and wasteheat   = ', urban_hac
        write(iulog,*) '   urban traffic flux   = ', urban_traffic
     end if
+    !
+    if ( masterproc )then
+       if (urban_properties == ' ') then
+          write(iulog,*) '   urban_properties dataset not set'
+       else
+          write(iulog,*) '   urban properties data = ',trim(urban_properties)
+       end if
+    end if
 
     ReadNamelist = .true.
 
   end subroutine UrbanReadNML
+
+  !-----------------------------------------------------------------------
+
+  !-----------------------------------------------------------------------
+  !BOP
+  !
+  ! !IROUTINE: mkurbanpar
+  !
+  ! !INTERFACE:
+  subroutine mkurbanpar(datfname, region_o, urbn_classes_gcell_o, urban_skip_abort_on_invalid_data_check)
+  !
+  ! !DESCRIPTION:
+  ! Make Urban Parameter data
+  !
+  ! Note that, in a grid cell with region_o==r, parameter values are filled from region r
+  ! for ALL density classes. Thus, the parameter variables have a numurbl dimension along
+  ! with their other dimensions.
+  !
+  ! Note that we will have a 'nodata' value (given by the fill_val value associated with
+  ! each parameter) wherever (1) we have a nodata value for region_o, or (2) the parameter
+  ! has nodata for the given region/density combination in the input lookup table.
+  !
+  ! !USES:
+   use mkindexmapMod   , only : dim_slice_type, lookup_2d_netcdf
+   use mkncdio
+   use clm_varpar      , only : numrad, numsolar, nlevurb
+   use landunit_varcon , only : numurbl
+!
+! !ARGUMENTS:
+   implicit none
+   character(len=*)  , intent(in) :: datfname                  ! input data file name
+   integer           , intent(in) :: region_o(:)               ! output grid: region ID (length: ns_o)
+   real(r8)          , intent(in) :: urbn_classes_gcell_o(:,:) ! output grid: percent urban in each density class
+                                                               ! (% of total grid cell area) (dimensions: ns_o, numurbl)
+   logical           , intent(in) :: urban_skip_abort_on_invalid_data_check
+
+! !CALLED FROM:
+! subroutine UrbanInput in module UrbanParamsType
+!
+! !REVISION HISTORY:
+! Author: Bill Sacks
+!
+!
+! !LOCAL VARIABLES:
+!EOP
+   ! Type to store information about each urban parameter
+   type param
+      character(len=32) :: name          ! name in input & output files
+      real(r8)          :: fill_val      ! value to put where we have no data in output
+      logical           :: check_invalid ! should we check whether there are any invalid data in the output?
+   end type param
+
+   real(r8), allocatable :: data_scalar_o(:,:)   ! output array for parameters with no extra dimensions
+   real(r8), allocatable :: data_rad_o(:,:,:,:)  ! output array for parameters dimensioned by numrad & numsolar
+   real(r8), allocatable :: data_levurb_o(:,:,:) ! output array for parameters dimensioned by nlevurb
+   integer , allocatable :: unity_dens_o(:,:)    ! artificial density indices
+   integer  :: nlevurb_i                         ! input  grid: number of urban vertical levels
+   integer  :: numsolar_i                        ! input  grid: number of solar type (DIR/DIF)
+   integer  :: numrad_i                          ! input  grid: number of solar bands (VIS/NIR)
+   integer  :: m,n,no,ns_o,p,k                   ! indices
+   integer  :: ncidi,dimid,varid                 ! netCDF id's
+   integer  :: ier                               ! error status
+   character(len=nf_max_name) :: varname         ! variable name
+
+   ! information on extra dimensions for lookup tables greater than 2-d:
+   type(dim_slice_type), allocatable :: extra_dims(:)
+
+   ! suffix for variables dimensioned by numsolar, for each value of numsolar:
+   character(len=8), parameter :: solar_suffix(numsolar) = (/'_DIR', '_DIF'/)
+
+   ! value to put where we have no data in output variables, for real-valued parameters
+   real(r8), parameter :: fill_val_real = 0._r8
+
+   ! To add a new urban parameter, simply add an element to one of the below lists
+   ! (params_scalar, params_rad or params_levurb)
+
+   ! Urban parameters with no extra dimensions
+   type(param), parameter :: params_scalar(13) = &
+        (/ param('CANYON_HWR', fill_val_real, .true.), &
+           param('EM_IMPROAD', fill_val_real, .true.), &
+           param('EM_PERROAD', fill_val_real, .true.), &
+           param('EM_ROOF', fill_val_real, .true.), &
+           param('EM_WALL', fill_val_real, .true.), &
+           param('HT_ROOF', fill_val_real, .true.), &
+           param('THICK_ROOF', fill_val_real, .true.), &
+           param('THICK_WALL', fill_val_real, .true.), &
+           param('T_BUILDING_MIN', fill_val_real, .true.), &
+           param('WIND_HGT_CANYON', fill_val_real, .true.), &
+           param('WTLUNIT_ROOF', fill_val_real, .true.), &
+           param('WTROAD_PERV', fill_val_real, .true.), &
+
+           ! Note that NLEV_IMPROAD is written as an integer, meaning that type conversion occurs
+           ! by truncation. Thus we expect the values in the NLEV_IMPROAD lookup table to be exact;
+           ! e.g., if a value were 1.99999 rather than 2.0000, it would be written as 1 instead of 2
+           ! Also note: we use fill_val=-1 rather than 0, because 0 appears in the lookup table
+           param('NLEV_IMPROAD', -1, .true.) /)
+
+   ! Urban parameters dimensioned by numrad & numsolar
+   type(param), parameter :: params_rad(4) = &
+        (/ param('ALB_IMPROAD', fill_val_real, .true.), &
+           param('ALB_PERROAD', fill_val_real, .true.), &
+           param('ALB_ROOF', fill_val_real, .true.), &
+           param('ALB_WALL', fill_val_real, .true.) /)
+
+   ! Urban parameters dimensioned by nlevurb
+   type(param), parameter :: params_levurb(6) = &
+        (/ param('TK_ROOF', fill_val_real, .true.), &
+           param('TK_WALL', fill_val_real, .true.), &
+           param('CV_ROOF', fill_val_real, .true.), &
+           param('CV_WALL', fill_val_real, .true.), &
+
+           ! Impervious road thermal conductivity and heat capacity have varying levels of
+           ! data. Thus, we expect to find some missing values in the lookup table -- we
+           ! do not want to treat that as an error -- thus, we set check_invalid=.false.
+           param('CV_IMPROAD', fill_val_real, .false.), &
+           param('TK_IMPROAD', fill_val_real, .false.) /)
+
+
+   character(len=*), parameter :: subname = 'mkurbanpar'
+!-----------------------------------------------------------------------
+
+   if (masterproc) then
+      write (6,*) 'Attempting to make Urban Parameters .....'
+      call shr_sys_flush(6)
+   end if
+
+   ! Determine & error-check array sizes
+   ns_o = size(region_o)
+   if (size(urbn_classes_gcell_o, 1) /= ns_o) then
+      write(6,*) modname//':'//subname//' ERROR: array size mismatch'
+      write(6,*) 'size(region_o) = ', size(region_o)
+      write(6,*) 'size(urbn_classes_gcell_o, 1) = ', size(urbn_classes_gcell_o, 1)
+      call abort()
+   end if
+   if (size(urbn_classes_gcell_o, 2) /= numurbl) then
+      write(6,*) modname//':'//subname//' ERROR: array size mismatch'
+      write(6,*) 'size(urbn_classes_gcell_o, 2) = ', size(urbn_classes_gcell_o, 2)
+      write(6,*) 'numurbl = ', numurbl
+   end if
+
+   ! Read dimensions from input file
+
+   if (masterproc) then
+      write (6,*) 'Open urban parameter file: ', trim(datfname)
+   end if
+   call check_ret(nf_open(datfname, 0, ncidi), subname)
+   call check_ret(nf_inq_dimid(ncidi, 'nlevurb', dimid), subname)
+   call check_ret(nf_inq_dimlen(ncidi, dimid, nlevurb_i), subname)
+   call check_ret(nf_inq_dimid(ncidi, 'numsolar', dimid), subname)
+   call check_ret(nf_inq_dimlen(ncidi, dimid, numsolar_i), subname)
+   call check_ret(nf_inq_dimid(ncidi, 'numrad', dimid), subname)
+   call check_ret(nf_inq_dimlen(ncidi, dimid, numrad_i), subname)
+
+   if (nlevurb_i /= nlevurb) then
+      write(6,*)'MKURBANPAR: parameter nlevurb= ',nlevurb, &
+           'does not equal input dataset nlevurb= ',nlevurb_i
+      stop
+   endif
+   if (numsolar_i /= numsolar) then
+      write(6,*)'MKURBANPAR: parameter numsolar= ',numsolar, &
+           'does not equal input dataset numsolar= ',numsolar_i
+      stop
+   endif
+   if (numrad_i /= numrad) then
+      write(6,*)'MKURBANPAR: parameter numrad= ',numrad, &
+           'does not equal input dataset numrad= ',numrad_i
+      stop
+   endif
+
+   ! Create an array that will hold the density indices
+   ! In a given grid cell, we output parameter values for all density classes, for the
+   ! region of that grid cell. In order to do this while still using the lookup_2d
+   ! routine, we create a dummy unity_dens_o array that contains the density values
+   ! passed to the lookup routine.
+
+   allocate(unity_dens_o(ns_o, numurbl))
+   do k = 1, numurbl
+      unity_dens_o(:,k) = k
+   end do
+
+   ! Handle urban parameters with no extra dimensions
+
+   allocate(data_scalar_o(ns_o, numurbl), stat=ier)
+   if (ier /= 0) then
+      write(6,*)'mkurbanpar allocation error'; call abort()
+   end if
+
+   do p = 1, size(params_scalar)
+      call lookup_and_check_err(params_scalar(p)%name, params_scalar(p)%fill_val, &
+           params_scalar(p)%check_invalid, urban_skip_abort_on_invalid_data_check, &
+           data_scalar_o, 0)
+      if (params_scalar(p)%name == "CANYON_HWR") then
+         urbinp%canyon_hwr = data_scalar_o
+      else if (params_scalar(p)%name == "EM_IMPROAD") then
+         urbinp%em_improad = data_scalar_o
+      else if (params_scalar(p)%name == "EM_PERROAD") then
+         urbinp%em_perroad = data_scalar_o
+      else if (params_scalar(p)%name == "EM_ROOF") then
+         urbinp%em_roof = data_scalar_o
+      else if (params_scalar(p)%name == "EM_WALL") then
+         urbinp%em_wall = data_scalar_o
+      else if (params_scalar(p)%name == "HT_ROOF") then
+         urbinp%ht_roof = data_scalar_o
+      else if (params_scalar(p)%name == "THICK_ROOF") then
+         urbinp%thick_roof = data_scalar_o
+      else if (params_scalar(p)%name == "THICK_WALL") then
+         urbinp%thick_wall = data_scalar_o
+      else if (params_scalar(p)%name == "T_BUILDING_MIN") then
+         urbinp%t_building_min = data_scalar_o
+      else if (params_scalar(p)%name == "WIND_HGT_CANYON") then
+         urbinp%wind_hgt_canyon = data_scalar_o
+      else if (params_scalar(p)%name == "WTLUNIT_ROOF") then
+         urbinp%wtlunit_roof = data_scalar_o
+      else if (params_scalar(p)%name == "WTROAD_PERV") then
+         urbinp%wtroad_perv = data_scalar_o
+      else if (params_scalar(p)%name == "NLEV_IMPROAD") then
+         urbinp%nlev_improad = data_scalar_o
+      end if
+   end do
+
+   deallocate(data_scalar_o)
+
+   ! Handle urban parameters dimensioned by numrad & numsolar
+
+   allocate(data_rad_o(ns_o, numurbl, numrad, numsolar), stat=ier)
+   if (ier /= 0) then
+      write(6,*)'mkurbanpar allocation error'; call abort()
+   end if
+
+   allocate(extra_dims(2))
+   extra_dims(1)%name = 'numrad'
+   extra_dims(2)%name = 'numsolar'
+
+   do p = 1, size(params_rad)
+      do m = 1,numsolar
+         extra_dims(2)%val = m
+         do n = 1,numrad
+            extra_dims(1)%val = n
+
+            call lookup_and_check_err(params_rad(p)%name, params_rad(p)%fill_val, &
+                 params_rad(p)%check_invalid, urban_skip_abort_on_invalid_data_check, &
+                 data_rad_o(:,:,n,m), &
+                 2, extra_dims)
+         end do
+      end do
+
+      ! Special handling of numsolar: rather than outputting variables with a numsolar
+      ! dimension, we output separate variables for each value of numsolar
+      do m = 1,numsolar
+         if (len_trim(params_rad(p)%name) + len_trim(solar_suffix(m)) > len(varname)) then
+            write(6,*) 'variable name exceeds length of varname'
+            write(6,*) trim(params_rad(p)%name)//trim(solar_suffix(m))
+            call abort()
+         end if
+         varname = trim(params_rad(p)%name)//trim(solar_suffix(m))
+         if (varname == "ALB_IMPROAD_DIR") then
+            urbinp%alb_improad_dir = data_rad_o(:,:,:,m)
+         else if (varname == "ALB_IMPROAD_DIF") then
+            urbinp%alb_improad_dif = data_rad_o(:,:,:,m)
+         else if (varname == "ALB_PERROAD_DIR") then
+            urbinp%alb_perroad_dir = data_rad_o(:,:,:,m)
+         else if (varname == "ALB_PERROAD_DIF") then
+            urbinp%alb_perroad_dif = data_rad_o(:,:,:,m)
+         else if (varname == "ALB_ROOF_DIR") then
+            urbinp%alb_roof_dir = data_rad_o(:,:,:,m)
+         else if (varname == "ALB_ROOF_DIF") then
+            urbinp%alb_roof_dif = data_rad_o(:,:,:,m)
+         else if (varname == "ALB_WALL_DIR") then
+            urbinp%alb_wall_dir = data_rad_o(:,:,:,m)
+         else if (varname == "ALB_WALL_DIF") then
+            urbinp%alb_wall_dif = data_rad_o(:,:,:,m)
+         end if
+      end do
+   end do
+
+   deallocate(data_rad_o)
+   deallocate(extra_dims)
+
+   ! Handle urban parameters dimensioned by nlevurb
+
+   allocate(data_levurb_o(ns_o, numurbl, nlevurb), stat=ier)
+   if (ier /= 0) then
+      write(6,*)'mkurbanpar allocation error'; call abort()
+   end if
+
+   allocate(extra_dims(1))
+   extra_dims(1)%name = 'nlevurb'
+
+   do p = 1, size(params_levurb)
+      do n = 1,nlevurb
+         extra_dims(1)%val = n
+
+         call lookup_and_check_err(params_levurb(p)%name, params_levurb(p)%fill_val, &
+              params_levurb(p)%check_invalid, &
+              urban_skip_abort_on_invalid_data_check, data_levurb_o(:,:,n), &
+              1, extra_dims)
+         if (params_levurb(p)%name == "TK_ROOF") then
+            urbinp%tk_roof(:,:,n) = data_levurb_o(:,:,n)
+         else if (params_levurb(p)%name == "TK_WALL") then
+            urbinp%tk_wall(:,:,n) = data_levurb_o(:,:,n)
+         else if (params_levurb(p)%name == "CV_ROOF") then
+            urbinp%cv_roof(:,:,n) = data_levurb_o(:,:,n)
+         else if (params_levurb(p)%name == "CV_WALL") then
+            urbinp%cv_wall(:,:,n) = data_levurb_o(:,:,n)
+         else if (params_levurb(p)%name == "CV_IMPROAD") then
+            urbinp%cv_improad(:,:,n) = data_levurb_o(:,:,n)
+         else if (params_levurb(p)%name == "TK_IMPROAD") then
+            urbinp%tk_improad(:,:,n) = data_levurb_o(:,:,n)
+         end if
+      end do
+
+   end do
+
+   deallocate(data_levurb_o)
+   deallocate(extra_dims)
+
+
+   call check_ret(nf_close(ncidi), subname)
+
+   if (masterproc) then
+      write (6,*) 'Successfully made Urban Parameters'
+      write (6,*)
+      call shr_sys_flush(6)
+   end if
+
+   deallocate(unity_dens_o)
+
+contains
+!------------------------------------------------------------------------------
+  subroutine lookup_and_check_err(varname, fill_val, check_invalid, &
+       urban_skip_abort_on_invalid_data_check, data, n_extra_dims, extra_dims)
+
+   ! Wrapper to lookup_2d_netcdf: Loops over each density class, calling lookup_2d_netcdf
+   ! with that density class and filling the appropriate slice of the data array. Also
+   ! checks for any errors, aborting if there were any.
+   !
+   ! Note that the lookup_2d_netcdf routine is designed to work with a single value of
+   ! each of the indices. However, we want to fill parameter values for ALL density
+   ! classes. This is why we loop over density class in this routine.
+   !
+   ! Note: inherits a number of variables from the parent routine
+
+      use mkindexmapMod, only : lookup_2d_netcdf
+
+      implicit none
+      character(len=*), intent(in) :: varname       ! name of lookup table
+      real(r8)        , intent(in) :: fill_val      ! value to put where we have no data in output variables
+      logical         , intent(in) :: check_invalid ! should we check whether there are any invalid data in the output?
+      logical         , intent(in) :: urban_skip_abort_on_invalid_data_check
+
+      real(r8)        , intent(out):: data(:,:)     ! output from lookup_2d_netcdf
+      integer         , intent(in) :: n_extra_dims  ! number of extra dimensions in the lookup table
+
+      ! slice to use if lookup table variable has more than 2 dimensions:
+      type(dim_slice_type), intent(in), optional :: extra_dims(:)
+
+      ! Local variables:
+
+      integer :: k,n   ! indices
+      integer :: ierr  ! error return code
+      integer, parameter :: urban_invalid_region = 0   ! urban_region_id indicating invalid point
+
+      do k = 1, numurbl
+         ! In the following, note that unity_dens_o(:,k) has been constructed so that
+         ! unity_dens_o(:,k)==k everywhere. Thus, we fill data(:,k) with the parameter
+         ! values corresponding to density class k.
+         ! Also note: We use invalid_okay=.true. because we fill all density classes,
+         ! some of which may have invalid entries. Because doing so disables some error
+         ! checking, we do our own error checking after the call.
+         call lookup_2d_netcdf(ncidi, varname, .true., &
+                               'density_class', 'region', n_extra_dims, &
+                               unity_dens_o(:,k), region_o, fill_val, data(:,k), ierr, &
+                               extra_dims=extra_dims, nodata=index_nodata, &
+                               invalid_okay=.true.)
+
+         if (ierr /= 0) then
+            write(6,*) modname//':'//subname//' ERROR in lookup_2d_netcdf for ', &
+                 trim(varname), ' class', k, ': err=', ierr
+            call abort()
+         end if
+
+         if (check_invalid) then
+            ! Make sure we have valid parameter values wherever we have non-zero urban cover
+            do n = 1, ns_o
+               ! This check assumes that fill_val doesn't appear in any of the valid entries
+               ! of the lookup table
+               if (urbn_classes_gcell_o(n,k) > 0. .and. data(n,k) == fill_val) then
+                  write(6,*) modname//':'//subname//' ERROR: fill value found in output where urban cover > 0'
+                  write(6,*) 'var: ', trim(varname)
+                  write(6,*) 'class: ', k
+                  write(6,*) 'n: ', n
+                  write(6,*) 'region: ', region_o(n)
+                  write(6,*) 'urbn_classes_gcell_o(n,k): ', urbn_classes_gcell_o(n,k)
+                  if (.not. urban_skip_abort_on_invalid_data_check) then
+                     ! NOTE(bja, 2015-01) added to work around a ?bug? noted in
+                     ! /glade/p/cesm/cseg/inputdata/lnd/clm2/surfdata_map/README_c141219
+                     call abort()
+                  end if
+               end if
+            end do
+         end if
+
+      end do
+
+   end subroutine lookup_and_check_err
+
+end subroutine mkurbanpar
 
   !-----------------------------------------------------------------------
 
