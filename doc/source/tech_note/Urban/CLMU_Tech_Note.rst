@@ -1387,7 +1387,7 @@ Similar to albedo, the emissivity of each urban surface is a weighted combinatio
 
 where :math:`\varepsilon_{u}` is the emissivity of :math:`u =` roof, pervious and impervious road (:numref:`table-input-data`), :math:`\varepsilon_{sno} = 0.97` is the emissivity of snow (:ref:`Oleson et al. 2004 <Olesonetal2004>`), and :math:`f_{u,sno}` is the fraction of the urban surface covered with snow (equation :eq:`eq-0485`).
 
-As with solar radiation, the longwave interactions within the urban canyon are determined numerically by allowing for multiple reflections until a convergence criteria is met (the absorbed longwave radiation for a given reflection is less than :math:`1 \times 10^{- 3}`). The following equation :eq:`eq-0485` assume that absorptivity equals emissivity.
+As with solar radiation, the longwave interactions within the urban canyon are determined numerically by allowing for multiple reflections until a convergence criteria is met (the absorbed longwave radiation for a given reflection is less than :math:`1 \times 10^{- 3}`). The following equations assume that absorptivity equals emissivity.
 
 The initial reflected (:math:`r`) longwave radiation from each urban surface is
 
@@ -1920,7 +1920,7 @@ The total net longwave radiation for the urban canopy (road, walls, and roof) is
 Solar Zenith Angle
 ------------------
 
-The formulation for solar zenith angle is thoroughly documented in :ref:`Oleson et al. (2010a) <olesonetal2010a>` (see :numref:`sec-saturation-specific-humidity`) and does not differ for urban surfaces.
+The formulation for solar zenith angle is thoroughly documented in section :numref:`Solar Zenith Angle` and does not differ for urban surfaces.
 
 .. _section-2:
 
