@@ -768,40 +768,40 @@ where :math:`F_{ij}` is the view factor. The view factors depend only on the geo
 
    F_{dA_{1} - A_{2}} = \frac{1}{2\pi}\left( \tan^{- 1}\frac{1}{Y} - AY\tan^{- 1}A \right)
 
-where :math:`A = \frac{1}{\sqrt{X^{2} + Y^{2}}}`, :math:`X = \frac{a}{b}`, and :math:`Y = c/b`. Following :ref:`Sakakibara (1996) <sakakibara1996>` and :ref:`Kusaka et al. (2001) <kusakaetal2001>`, for an infinitely long canyon, :math:`b = \infty`, :math:`a = W`, and so the wall-sky view factor at distance :math:`c` from a point on the wall to the canyon top is
+where :math:`A = 1/\sqrt{X^{2} + Y^{2}}`, :math:`X = a/b`, and :math:`Y = c/b`. Following :ref:`Sakakibara (1996) <sakakibara1996>` and :ref:`Kusaka et al. (2001) <kusakaetal2001>`, for an infinitely long canyon, :math:`b = \infty`, :math:`a = W`, and so the wall-sky view factor at distance :math:`c` from a point on the wall to the canyon top is
 
 .. math::
    :label: eq-0116
 
-   \Psi_{wall - sky|c} = \frac{1}{2}\left( 1 - \frac{c}{\sqrt{c^{2} + W^{2}}} \right)
+   \Psi_{wall - sky|c} = \frac{1}{2}\left( 1 - \frac{c}{\sqrt{c^{2} + W^{2}}} \right).
 
 The total wall-sky view factor can be found by integrating the above equation over the height of the wall as
 
 .. math::
    :label: eq-0117
 
-   \Psi_{wall - sky} = \frac{1}{H}\int_{c = 0}^{c = H}{\frac{1}{2}\left( 1 - \frac{c}{\sqrt{c^{2} + W^{2}}} \right)dc} = \frac{\frac{1}{2}\left( \frac{H}{W} + 1 - \sqrt{1 + \left( \frac{H}{W} \right)^{2}} \right)}{\frac{H}{W}}
+   \Psi_{wall - sky} = \frac{1}{H}\int_{c = 0}^{c = H}{\frac{1}{2}\left( 1 - \frac{c}{\sqrt{c^{2} + W^{2}}} \right)dc} = \frac{\frac{1}{2}\left( \frac{H}{W} + 1 - \sqrt{1 + \left( \frac{H}{W} \right)^{2}} \right)}{\frac{H}{W}}.
 
 By the reciprocity rule (:math:`A_{1}F_{A_{1} - A_{2}} = A_{2}F_{A_{2} - A_{1}}`) (:ref:`Sparrow and Cess 1978 <sparrowandcess1978>`), the sky-wall view factor is
 
 .. math::
    :label: eq-0118
 
-   \Psi_{sky - wall} = \frac{H}{W}\Psi_{wall - sky}
+   \Psi_{sky - wall} = \frac{H}{W}\Psi_{wall - sky}.
 
 When applied to equation :eq:`eq-0114` , :math:`\Psi_{sky - wall}` will yield a flux density to the wall in terms of per unit sky area. In the radiation computations detailed below, the diffuse fluxes for the walls are solved in terms of per unit wall area. Dividing equation :eq:`eq-0118` by the height to width ratio converts the view factor to per unit wall area. Thus,
 
 .. math::
    :label: eq-0119
 
-   \Psi_{sky - wall} = \frac{\frac{1}{2}\left( \frac{H}{W} + 1 - \sqrt{1 + \left( \frac{H}{W} \right)^{2}} \right)}{\frac{H}{W}}
+   \Psi_{sky - wall} = \frac{\frac{1}{2}\left( \frac{H}{W} + 1 - \sqrt{1 + \left( \frac{H}{W} \right)^{2}} \right)}{\frac{H}{W}}.
 
 Similarly, the view factor for radiation from the sky to the road and from road to sky can be solved and is
 
 .. math::
    :label: eq-0120
 
-   \Psi_{sky - road} = \frac{W}{W}\Psi_{road - sky} = \Psi_{road - sky} = \sqrt{1 + \left( \frac{H}{W} \right)^{2}} - \frac{H}{W}
+   \Psi_{sky - road} = \frac{W}{W}\Psi_{road - sky} = \Psi_{road - sky} = \sqrt{1 + \left( \frac{H}{W} \right)^{2}} - \frac{H}{W}.
 
 By symmetry,
 
@@ -820,7 +820,7 @@ and the other view factors can be deduced from conservation of energy as
 .. math::
    :label: eq-0121
 
-   \Psi_{wall - wall} = 1 - \Psi_{wall - sky} - \Psi_{wall - road}
+   \Psi_{wall - wall} = 1 - \Psi_{wall - sky} - \Psi_{wall - road}.
 
 The view factors are presented graphically in :numref:`fig-view-factors-hw-ratio`. Note that the view factors for radiation from the walls to the other surfaces sum to one (:math:`\Psi_{wall - wall} + \Psi_{wall - road} + \Psi_{wall - sky} = 1`). Similarly, the view factors for radiation from the road to the other surfaces also sum to one (:math:`\Psi_{road - wall} + \Psi_{road - wall} + \Psi_{road - sky} = 1`). As :ref:`Harman et al. (2004) <harmanetal2004>` notes, at low height to width ratios, the road-sky view factor is close to one, the wall-wall view factor is close to zero, and the wall sky view factor is close to one half. However, at these low height to width ratios, the wall area is small compared to the road or sky area, indicating that most of the radiative exchange occurs between the road and sky, as it would for a flat surface. At height to width ratios greater than one, most of the radiative interactions take place between the two walls and the wall and the road. These view factors are consistent with those given by both :ref:`Masson (2000) <masson2000>` and :ref:`Harman et al. (2004) <harmanetal2004>`.
 
