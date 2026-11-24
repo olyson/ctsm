@@ -196,7 +196,7 @@ The atmospheric model within CCSM requires fluxes of sensible and latent heat an
 
    :sup:`3`\ These are provided by the atmospheric model but not used by the urban model.
 
-   :sup:`4`\ Density of air (:math:`\rho_{atm}`) (kg m\ :sup:`-3`) is also required but is calculated directly from :math:`\rho_{atm} = \frac{P_{atm} - 0.378e_{atm}}{R_{da}T_{atm}}` where :math:`P_{atm}` is atmospheric pressure (Pa), :math:`e_{atm}` is atmospheric vapor pressure (Pa), :math:`R_{da}` is the gas constant for dry air (J kg\ :sup:`-1` K\ :sup:`-1`) (:numref:`table-physical-constants`), and :math:`T_{atm}` is the atmospheric temperature (K). The atmospheric vapor pressure :math:`e_{atm}` is derived from atmospheric specific humidity :math:`q_{atm}` (kg kg\ :sup:`-1`) as :math:`e_{atm} = \frac{q_{atm}P_{atm}}{0.622 + 0.378q_{atm}}`.
+   :sup:`4`\ Density of air (:math:`\rho_{atm}`) (kg m\ :sup:`-3`) is also required but is calculated directly from :math:`\rho_{atm} = (P_{atm} - 0.378e_{atm})/R_{da}T_{atm}` where :math:`P_{atm}` is atmospheric pressure (Pa), :math:`e_{atm}` is atmospheric vapor pressure (Pa), :math:`R_{da}` is the gas constant for dry air (J kg\ :sup:`-1` K\ :sup:`-1`) (:numref:`table-physical-constants`), and :math:`T_{atm}` is the atmospheric temperature (K). The atmospheric vapor pressure :math:`e_{atm}` is derived from atmospheric specific humidity :math:`q_{atm}` (kg kg\ :sup:`-1`) as :math:`e_{atm} = q_{atm}P_{atm}/(0.622 + 0.378q_{atm})`.
 
    :sup:`5`\ The O\ :sub:`2` partial pressure (Pa) is required but is calculated from molar ratio and the atmospheric pressure :math:`P_{atm}` as :math:`o_{i} =0.209P_{atm}`.
 
@@ -336,7 +336,7 @@ As described in section :numref:`sec-overview_history`, the model requires urban
      - -
      - %
    * - Canyon height to width ratio
-     - :math:`\frac{H}{W}`
+     - :math:`H/W`
      - -
    * - Roof fraction
      - :math:`W_{roof}`
@@ -509,7 +509,7 @@ Physical constants, shared by all of the components in the CCSM, are presented i
      - kg kmol\ :sup:`-1`
    * - Dry air gas constant
      - :math:`R_{da}`
-     - :math:`\frac{R_{gas}}{MW_{da}}`
+     - :math:`R_{gas}/MW_{da}`
      - J K\ :sup:`-1` kg\ :sup:`-1`
    * - Molecular weight of water vapor
      - :math:`MW_{wv}`
@@ -517,7 +517,7 @@ Physical constants, shared by all of the components in the CCSM, are presented i
      - kg kmol\ :sup:`-1`
    * - Water vapor gas constant
      - :math:`R_{wv}`
-     - :math:`\frac{R_{gas}}{MW_{wv}}`
+     - :math:`R_{gas}/MW_{wv}`
      - J K\ :sup:`-1` kg\ :sup:`-1`
    * - Von Karman constant
      - :math:`k`
@@ -617,7 +617,7 @@ The direct and diffuse "ground" albedos, :math:`\alpha_{g,\Lambda}^{\mu}` and :m
 Incident direct solar radiation
 -------------------------------
 
-Unlike the horizontal roof surface, the direct beam solar radiation received by the walls and the road must be adjusted for orientation and shadowing. The analytical solution given below follows :ref:`Masson (2000) <masson2000>`. First, let :math:`\theta` be the angle between the sun direction and the along-canyon axis and consider the case where the along-canyon axis is perpendicular to the sun direction (:math:`\theta = \frac{\pi}{2}`). In this case, as shown in :numref:`fig-solar-elevation-view`, if the solar zenith angle :math:`\mu` is greater than the critical solar zenith angle :math:`\mu_{0}` (:math:`\mu_{0} = \tan^{- 1}\left( \frac{W}{H} \right)`), the road is in full shade, and the sunlit wall is in partial sun. Conversely, if :math:`\mu` is less than :math:`\mu_{0}`, the road is in partial sun and the sunlit wall is in full sun. Note that, radiatively, the pervious and impervious road are treated the same, although their albedos are specified separately and may differ (:numref:`table-input-data`).
+Unlike the horizontal roof surface, the direct beam solar radiation received by the walls and the road must be adjusted for orientation and shadowing. The analytical solution given below follows :ref:`Masson (2000) <masson2000>`. First, let :math:`\theta` be the angle between the sun direction and the along-canyon axis and consider the case where the along-canyon axis is perpendicular to the sun direction (:math:`\theta = \pi/2`). In this case, as shown in :numref:`fig-solar-elevation-view`, if the solar zenith angle :math:`\mu` is greater than the critical solar zenith angle :math:`\mu_{0}` (:math:`\mu_{0} = \tan^{- 1}\left( W/H \right)`), the road is in full shade, and the sunlit wall is in partial sun. Conversely, if :math:`\mu` is less than :math:`\mu_{0}`, the road is in partial sun and the sunlit wall is in full sun. Note that, radiatively, the pervious and impervious road are treated the same, although their albedos are specified separately and may differ (:numref:`table-input-data`).
 
 .. figure:: solar_radiation.png
    :width: 5.08274in
@@ -626,7 +626,7 @@ Unlike the horizontal roof surface, the direct beam solar radiation received by 
 
    Elevation (side) view of direct beam solar radiation incident on urban canyon surfaces for solar zenith angle :math:`\mu > \mu_{0}` (top) and :math:`\mu \leq \mu_{0}` (bottom). :math:`S_{atm} \downarrow_{\Lambda}^{\mu}` is the direct beam incident solar radiation incident on a horizontal surface from the atmosphere. The along-canyon axis is assumed to be perpendicular to the sun direction.
 
-If the direct beam solar radiation received by a horizontal surface (i.e., as received by the roof) is :math:`S_{atm} \downarrow_{\Lambda}^{\mu}`, then the solar radiation on the wall in full illumination (:math:`\mu \leq \mu_{0}`) is :math:`\frac{\left( S_{atm} \downarrow_{\Lambda}^{\mu}\cos i \right)}{\cos\mu}` where :math:`i` is the incidence angle (:numref:`fig-solar-elevation-view`). Since :math:`\cos i = \cos(90 - \mu) = \sin\mu`, the solar radiation on the sunlit wall is
+If the direct beam solar radiation received by a horizontal surface (i.e., as received by the roof) is :math:`S_{atm} \downarrow_{\Lambda}^{\mu}`, then the solar radiation on the wall in full illumination (:math:`\mu \leq \mu_{0}`) is :math:`\left( S_{atm} \downarrow_{\Lambda}^{\mu}\cos i \right)/\cos\mu` where :math:`i` is the incidence angle (:numref:`fig-solar-elevation-view`). Since :math:`\cos i = \cos(90 - \mu) = \sin\mu`, the solar radiation on the sunlit wall is
 
 .. math::
    :label: eq-0105
@@ -634,7 +634,7 @@ If the direct beam solar radiation received by a horizontal surface (i.e., as re
    \begin{array}{lr}
    S_{sunwall} \downarrow_{\Lambda}^{\mu}\left( \theta = \frac{\pi}{2} \right) = \tan(\mu)S_{atm} \downarrow_{\Lambda}^{\mu} & \mu \leq \mu_{0} \end{array}.
 
-Note that this is twice the radiation received by the wall in :ref:`Masson (2000) <masson2000>` because here we force the other (shaded) wall to receive no solar radiation (:math:`S_{shdwall} \downarrow_{\Lambda}^{\mu} = 0`). In the case of :math:`\mu > \mu_{0}`, the illuminated fraction is :math:`\frac{(H - y)}{H}` and :math:`S_{sunwall} \downarrow_{\Lambda}^{\mu} = \left\lbrack \frac{(H - y)}{H} \right\rbrack\tan\mu S_{atm} \downarrow_{\Lambda}^{\mu}`. Since :math:`\tan\mu = \frac{W}{(H - y)}` this simplifies to
+Note that this is twice the radiation received by the wall in :ref:`Masson (2000) <masson2000>` because here we force the other (shaded) wall to receive no solar radiation (:math:`S_{shdwall} \downarrow_{\Lambda}^{\mu} = 0`). In the case of :math:`\mu > \mu_{0}`, the illuminated fraction is :math:`(H - y)/H` and :math:`S_{sunwall} \downarrow_{\Lambda}^{\mu} = \left\lbrack (H - y)/H \right\rbrack\tan\mu S_{atm} \downarrow_{\Lambda}^{\mu}`. Since :math:`\tan\mu = W/(H - y)` this simplifies to
 
 .. math::
    :label: eq-0106
@@ -642,7 +642,7 @@ Note that this is twice the radiation received by the wall in :ref:`Masson (2000
    \begin{array}{lr}
    S_{sunwall} \downarrow_{\Lambda}^{\mu}\left( \theta = \frac{\pi}{2} \right) = \frac{W}{H}S_{atm} \downarrow_{\Lambda}^{\mu} & \mu > \mu_{0} \end{array}.
 
-Since the road is a horizontal surface, :math:`S_{road} \downarrow_{\Lambda}^{\mu} = \left\lbrack \frac{(W - x)}{W} \right\rbrack S_{atm} \downarrow_{\Lambda}^{\mu}` for :math:`\mu \leq \mu_{0}`. Since :math:`x = H\tan\mu`, the direct solar radiation incident on the road (pervious and impervious) is
+Since the road is a horizontal surface, :math:`S_{road} \downarrow_{\Lambda}^{\mu} = \left\lbrack (W - x)/W \right\rbrack S_{atm} \downarrow_{\Lambda}^{\mu}` for :math:`\mu \leq \mu_{0}`. Since :math:`x = H\tan\mu`, the direct solar radiation incident on the road (pervious and impervious) is
 
 
 
@@ -654,7 +654,7 @@ Since the road is a horizontal surface, :math:`S_{road} \downarrow_{\Lambda}^{\m
    \left( 1 - \frac{H}{W}\tan\mu \right)S_{atm} \downarrow_{\Lambda}^{\mu} & \mu \leq \mu_{0}
    \end{array} \right\}.
 
-Equations :eq:`eq-0105` and :eq:`eq-0106` for the walls and equation :eq:`eq-0001` for the road can now be expanded to account for any canyon orientation (:math:`0 \leq \theta \leq \frac{\pi}{2}`). If :math:`\theta` is the angle between the sun direction and the along-canyon axis (:numref:`fig-solar-plan-view`), then the expression for the incidence angle is now :math:`\cos i = \sin\mu\sin\theta` and equation :eq:`eq-0105` becomes
+Equations :eq:`eq-0105` and :eq:`eq-0106` for the walls and equation :eq:`eq-0001` for the road can now be expanded to account for any canyon orientation (:math:`0 \leq \theta \leq \pi/2`). If :math:`\theta` is the angle between the sun direction and the along-canyon axis (:numref:`fig-solar-plan-view`), then the expression for the incidence angle is now :math:`\cos i = \sin\mu\sin\theta` and equation :eq:`eq-0105` becomes
 
 .. math::
    :label: eq-0107
@@ -667,7 +667,7 @@ Equations :eq:`eq-0105` and :eq:`eq-0106` for the walls and equation :eq:`eq-000
 
    Plan view of direct beam solar radiation incident on urban canyon surfaces. :math:`S_{atm} \downarrow_{\Lambda}^{\mu}` is the direct beam incident solar radiation incident on a horizontal surface from the atmosphere. :math:`\theta` is the angle between the along-canyon axis and the sun direction.
 
-For the case of :math:`\mu > \mu_{0}`, :math:`S_{sunwall} \downarrow_{\Lambda}^{\mu}(\theta) = \left\lbrack \frac{(H - y)}{H} \right\rbrack\sin\theta\tan\mu S_{atm} \downarrow_{\Lambda}^{\mu}`. However, now :math:`\tan\mu = \frac{\left( \frac{W}{\sin\theta} \right)}{(H - y)}` and thus
+For the case of :math:`\mu > \mu_{0}`, :math:`S_{sunwall} \downarrow_{\Lambda}^{\mu}(\theta) = \left\lbrack (H - y)/H \right\rbrack\sin\theta\tan\mu S_{atm} \downarrow_{\Lambda}^{\mu}`. However, now :math:`\tan\mu = \left( W/\sin\theta \right)/(H - y)` and thus
 
 .. math::
    :label: eq-0108
@@ -675,7 +675,7 @@ For the case of :math:`\mu > \mu_{0}`, :math:`S_{sunwall} \downarrow_{\Lambda}^{
    \begin{array}{lr}
    S_{sunwall} \downarrow_{\Lambda}^{\mu}(\theta) = \frac{W}{H}S_{atm} \downarrow_{\Lambda}^{\mu} & \mu > \mu_{0} \end{array}.
 
-Similarly, for the road (:math:`\mu \leq \mu_{0}`), :math:`S_{road} \downarrow_{\Lambda}^{\mu}(\theta) = \left\lbrack \frac{\left( \frac{W}{\sin\theta} - x \right)}{\left( \frac{W}{\sin\theta} \right)} \right\rbrack S_{atm} \downarrow_{\Lambda}^{\mu}` with :math:`x = H\tan\mu` simplifies to
+Similarly, for the road (:math:`\mu \leq \mu_{0}`), :math:`S_{road} \downarrow_{\Lambda}^{\mu}(\theta) = \left\lbrack \left(W/\sin\theta - x \right)/\left( W/\sin\theta \right) \right\rbrack S_{atm} \downarrow_{\Lambda}^{\mu}` with :math:`x = H\tan\mu` simplifies to
 
 .. math::
    :label: eq-0002
@@ -692,7 +692,7 @@ Note that the critical solar zenith angle is now
 
    \mu_{0} = \tan^{- 1}\left( \frac{\frac{W}{\sin\theta}}{H} \right).
 
-Equations :eq:`eq-0107`, :eq:`eq-0108`, and :eq:`eq-0002` are integrated over all canyon orientations (:math:`0 \leq \theta \leq \frac{\pi}{2}`). The integration is done in two parts, first from :math:`\theta = 0` to :math:`\theta = \theta_{0}`, and second from :math:`\theta = \theta_{0}` to :math:`\theta = \frac{\pi}{2}`, where :math:`\theta_{0}` is the critical canyon orientation for which the road is no longer illuminated. This can be derived from Equation :eq:`eq-0109` and is
+Equations :eq:`eq-0107`, :eq:`eq-0108`, and :eq:`eq-0002` are integrated over all canyon orientations (:math:`0 \leq \theta \leq \pi/2`). The integration is done in two parts, first from :math:`\theta = 0` to :math:`\theta = \theta_{0}`, and second from :math:`\theta = \theta_{0}` to :math:`\theta = \pi/2`, where :math:`\theta_{0}` is the critical canyon orientation for which the road is no longer illuminated. This can be derived from Equation :eq:`eq-0109` and is
 
 .. math::
    :label: eq-0110
@@ -747,7 +747,7 @@ The direct incident solar radiation conserves energy as
    &\quad \left\lbrack S_{imprvrd} \downarrow_{\Lambda}^{\mu}\left( 1 - f_{prvrd} \right) + S_{prvrd} \downarrow_{\Lambda}^{\mu}f_{prvrd} + \frac{H}{W}\left( S_{sunwall} \downarrow_{\Lambda}^{\mu} + S_{shdwall} \downarrow_{\Lambda}^{\mu} \right) \right\rbrack
    \end{split}.
 
-Note that the factor :math:`\frac{H}{W}` for the sunlit wall and shaded wall converts the flux from watts per meter squared of wall area to watts per meter squared of ground area.
+Note that the factor :math:`H/W` for the sunlit wall and shaded wall converts the flux from watts per meter squared of wall area to watts per meter squared of ground area.
 
 .. _sec-view-factors:
 
