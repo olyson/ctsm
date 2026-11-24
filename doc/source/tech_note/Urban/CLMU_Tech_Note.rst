@@ -660,9 +660,7 @@ Equations :eq:`eq-0105` and :eq:`eq-0106` for the walls and equation :eq:`eq-000
 
    S_{sunwall} \downarrow_{\Lambda}^{\mu}(\theta) = \sin\theta\tan\mu S_{atm} \downarrow_{\Lambda}^{\mu} \mu \leq \mu_{0}
 
-.. figure:: image5.jpeg
-   :width: 3.748in
-   :height: 5.0in
+.. figure:: solar_radiation2.png
    :name: fig-solar-plan-view
 
    Plan view of direct beam solar radiation incident on urban canyon surfaces. :math:`S_{atm} \downarrow_{\Lambda}^{\mu}` is the direct beam incident solar radiation incident on a horizontal surface from the atmosphere. :math:`\theta` is the angle between the along-canyon axis and the sun direction.
