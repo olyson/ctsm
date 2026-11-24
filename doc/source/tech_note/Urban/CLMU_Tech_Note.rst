@@ -829,9 +829,7 @@ The view factors are presented graphically in :numref:`fig-view-factors-hw-ratio
 
    Schematic representation of angle (view) factor between infinitesimal element :math:`dA_{1}` (e.g., a point on the wall) and finite surface :math:`A_{2}` (e.g., the sky) (after :ref:`Sparrow and Cess (1978) <sparrowandcess1978>`).
 
-.. figure:: image7.png
-   :width: 5.0356in
-   :height: 6.5in
+.. figure:: view_factors.png
    :name: fig-view-factors-hw-ratio
 
    View factors as a function of canyon height to width ratio. :math:`\Psi_{road - sky}` is the fraction of radiation reaching the sky from the road, :math:`\Psi_{road - wall}` is the fraction of radiation reaching the wall from the road, :math:`\Psi_{wall - sky}` is the fraction of radiation reaching the sky from the wall, :math:`\Psi_{wall - road}` is the fraction of radiation reaching the road from the wall, and :math:`\Psi_{wall - wall}` is the fraction of radiation reaching the wall from the opposite wall.
