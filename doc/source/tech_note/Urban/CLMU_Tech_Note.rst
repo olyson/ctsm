@@ -1313,9 +1313,7 @@ The total absorbed solar radiation for the urban canopy (road, walls, and roof) 
 
 The canyon albedo (excluding the roof albedo) shown in :numref:`fig-canyon-albedo` has the same functional relationships with solar zenith angle and height to width ratio as TEB (:ref:`Masson 2000 <masson2000>`). In general, the direct and diffuse canyon albedo decreases with height to width ratio as more solar radiation is trapped and absorbed within the canyon. The trapping of solar radiation is less effective at larger solar zenith angles. At these large solar zenith angles and small height to width ratio, the albedo increases because the higher albedo walls dominate the radiative exchange.
 
-.. figure:: image9.png
-   :width: 4.61566in
-   :height: 6.0in
+.. figure:: canyon_albedo.png
    :name: fig-canyon-albedo
 
    Direct beam and diffuse albedo of the urban canyon (walls and road) as a function of height to width ratio from 0.1 to 3.0 in increments of 0.1 and solar zenith angles from 0° to 85° in increments of 5°. The atmospheric solar radiation is :math:`S_{atm} \downarrow_{\Lambda}^{\mu} = 400` and :math:`S_{atm} \downarrow_{\Lambda} = 200` W m\ :sup:`-2`.
