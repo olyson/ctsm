@@ -608,7 +608,7 @@ where :math:`f_{u,sno}` is the fraction of the urban surface covered with snow w
 .. math::
    :label: eq-0485
 
-   f_{u,sno} = \frac{z_{u,sno}}{0.05} \leq 1
+   f_{u,sno} = \frac{z_{u,sno}}{0.05} \leq 1.
 
 The direct and diffuse "ground" albedos, :math:`\alpha_{g,\Lambda}^{\mu}` and :math:`\alpha_{g,\Lambda}`, where :math:`\Lambda` denotes either the visible (VIS) or near-infrared (NIR) waveband, are provided by the surface dataset (:numref:`table-input-data`), and :math:`z_{u,sno}` is the depth of snow (m) (:numref:`sec-snow`). An estimate of snow albedo is made based on the parameterization of :ref:`Marshall (1989) <marshall1989>` in which albedo depends on solar zenith angle, grain size, and soot content (e.g., as adopted by the Land Surface Model (LSM) (:ref:`Bonan 1996 <bonan1996>`)). Here, however, several simplifying assumptions are made due to uncertainties in how to apply such a parameterization to urban surfaces. A snow grain radius of 100 :math:`\mu m` (new powder snow, aged a few days) and a soot mass fraction of 1.5\ :math:`\times 10^{- 5}` (arrived at by noting that the LSM global soot mass fraction is 5\ :math:`\times 10^{- 6}` and :ref:`Chylek et al. (1987) <chyleketal1987>` observed that soot concentrations in urban snowpacks averaged three times the concentration in rural snowpacks) are assumed. Direct and diffuse albedos are assumed to be equal. This yields :math:`\alpha_{sno,VIS}^{\mu} = \alpha_{sno,VIS} = 0.66` and :math:`\alpha_{sno,NIR}^{\mu} = \alpha_{sno,NIR} = 0.56` which fall about in the middle of the range given by :ref:`Oke (1987) <oke1987>`.
 
@@ -617,7 +617,7 @@ The direct and diffuse "ground" albedos, :math:`\alpha_{g,\Lambda}^{\mu}` and :m
 Incident direct solar radiation
 -------------------------------
 
-Unlike the horizontal roof surface, the direct beam solar radiation received by the walls and the road must be adjusted for orientation and shadowing. The analytical solution given below follows :ref:`Masson (2000) <masson2000>`. First, let :math:`\theta` be the angle between the sun direction and the along-canyon axis and consider the case where the along-canyon axis is perpendicular to the sun direction (:math:`\theta = \frac{\pi}{2}`). In this case, as shown in :numref:`fig-solar-elevation-view`, if the solar zenith angle :math:`\mu` is greater than the critical solar zenith angle :math:`\mu_{0}` (:math:`\mu_{0} = \tan^{- 1}\left( \frac{W}{H} \right)`), the road is in full shade, and the sunlit wall is in partial sun. Conversely, if :math:`\mu` is less than :math:`{\overrightarrow{L}}_{uc} - \left( L_{uc} \uparrow - L_{atm} \downarrow \right) = 0`, the road is in partial sun and the sunlit wall is in full sun. Note that, radiatively, the pervious and impervious road are treated the same, although their albedos are specified separately and may differ (:numref:`table-input-data`).
+Unlike the horizontal roof surface, the direct beam solar radiation received by the walls and the road must be adjusted for orientation and shadowing. The analytical solution given below follows :ref:`Masson (2000) <masson2000>`. First, let :math:`\theta` be the angle between the sun direction and the along-canyon axis and consider the case where the along-canyon axis is perpendicular to the sun direction (:math:`\theta = \frac{\pi}{2}`). In this case, as shown in :numref:`fig-solar-elevation-view`, if the solar zenith angle :math:`\mu` is greater than the critical solar zenith angle :math:`\mu_{0}` (:math:`\mu_{0} = \tan^{- 1}\left( \frac{W}{H} \right)`), the road is in full shade, and the sunlit wall is in partial sun. Conversely, if :math:`\mu` is less than :math:`\mu_{0}`, the road is in partial sun and the sunlit wall is in full sun. Note that, radiatively, the pervious and impervious road are treated the same, although their albedos are specified separately and may differ (:numref:`table-input-data`).
 
 .. figure:: solar_radiation.png
    :width: 5.08274in
@@ -631,14 +631,16 @@ If the direct beam solar radiation received by a horizontal surface (i.e., as re
 .. math::
    :label: eq-0105
 
-   S_{sunwall} \downarrow_{\Lambda}^{\mu}\left( \theta = \frac{\pi}{2} \right) = \tan(\mu)S_{atm} \downarrow_{\Lambda}^{\mu} \mu \leq \mu_{0}
+   \begin{array}{lr}
+   S_{sunwall} \downarrow_{\Lambda}^{\mu}\left( \theta = \frac{\pi}{2} \right) = \tan(\mu)S_{atm} \downarrow_{\Lambda}^{\mu} & \mu \leq \mu_{0} \end{array}.
 
 Note that this is twice the radiation received by the wall in :ref:`Masson (2000) <masson2000>` because here we force the other (shaded) wall to receive no solar radiation (:math:`S_{shdwall} \downarrow_{\Lambda}^{\mu} = 0`). In the case of :math:`\mu > \mu_{0}`, the illuminated fraction is :math:`\frac{(H - y)}{H}` and :math:`S_{sunwall} \downarrow_{\Lambda}^{\mu} = \left\lbrack \frac{(H - y)}{H} \right\rbrack\tan\mu S_{atm} \downarrow_{\Lambda}^{\mu}`. Since :math:`\tan\mu = \frac{W}{(H - y)}` this simplifies to
 
 .. math::
    :label: eq-0106
 
-   S_{sunwall} \downarrow_{\Lambda}^{\mu}\left( \theta = \frac{\pi}{2} \right) = \frac{W}{H}S_{atm} \downarrow_{\Lambda}^{\mu} \mu > \mu_{0}
+   \begin{array}{lr}
+   S_{sunwall} \downarrow_{\Lambda}^{\mu}\left( \theta = \frac{\pi}{2} \right) = \frac{W}{H}S_{atm} \downarrow_{\Lambda}^{\mu} & \mu > \mu_{0} \end{array}.
 
 Since the road is a horizontal surface, :math:`S_{road} \downarrow_{\Lambda}^{\mu} = \left\lbrack \frac{(W - x)}{W} \right\rbrack S_{atm} \downarrow_{\Lambda}^{\mu}` for :math:`\mu \leq \mu_{0}`. Since :math:`x = H\tan\mu`, the direct solar radiation incident on the road (pervious and impervious) is
 
@@ -647,18 +649,18 @@ Since the road is a horizontal surface, :math:`S_{road} \downarrow_{\Lambda}^{\m
 .. math::
    :label: eq-0001
 
-   S_{road} \downarrow_{\Lambda}^{\mu}\left( \theta = \frac{\pi}{2} \right) = \left\{ \begin{aligned}
-   & 0 \mu > \mu_{0} \\
-   & \left( 1 - \frac{H}{W}\tan\mu \right)S_{atm} \downarrow_{\Lambda}^{\mu} \mu \leq \mu_{0}
-   \end{aligned} \right\}
-
+   S_{road} \downarrow_{\Lambda}^{\mu}\left( \theta = \frac{\pi}{2} \right) = \left\{\begin{array}{lr}
+   0 & \mu > \mu_{0} \\
+   \left( 1 - \frac{H}{W}\tan\mu \right)S_{atm} \downarrow_{\Lambda}^{\mu} & \mu \leq \mu_{0}
+   \end{array} \right\}.
 
 Equations :eq:`eq-0105` and :eq:`eq-0106` for the walls and equation :eq:`eq-0001` for the road can now be expanded to account for any canyon orientation (:math:`0 \leq \theta \leq \frac{\pi}{2}`). If :math:`\theta` is the angle between the sun direction and the along-canyon axis (:numref:`fig-solar-plan-view`), then the expression for the incidence angle is now :math:`\cos i = \sin\mu\sin\theta` and equation :eq:`eq-0105` becomes
 
 .. math::
    :label: eq-0107
 
-   S_{sunwall} \downarrow_{\Lambda}^{\mu}(\theta) = \sin\theta\tan\mu S_{atm} \downarrow_{\Lambda}^{\mu} \mu \leq \mu_{0}
+   \begin{array}{lr}
+   S_{sunwall} \downarrow_{\Lambda}^{\mu}(\theta) = \sin\theta\tan\mu S_{atm} \downarrow_{\Lambda}^{\mu} \mu \leq \mu_{0} \end{array}.
 
 .. figure:: solar_radiation2.png
    :name: fig-solar-plan-view
@@ -670,34 +672,32 @@ For the case of :math:`\mu > \mu_{0}`, :math:`S_{sunwall} \downarrow_{\Lambda}^{
 .. math::
    :label: eq-0108
 
-   S_{sunwall} \downarrow_{\Lambda}^{\mu}(\theta) = \frac{W}{H}S_{atm} \downarrow_{\Lambda}^{\mu} \mu > \mu_{0}
+   \begin{array}{lr}
+   S_{sunwall} \downarrow_{\Lambda}^{\mu}(\theta) = \frac{W}{H}S_{atm} \downarrow_{\Lambda}^{\mu} & \mu > \mu_{0} \end{array}.
 
 Similarly, for the road (:math:`\mu \leq \mu_{0}`), :math:`S_{road} \downarrow_{\Lambda}^{\mu}(\theta) = \left\lbrack \frac{\left( \frac{W}{\sin\theta} - x \right)}{\left( \frac{W}{\sin\theta} \right)} \right\rbrack S_{atm} \downarrow_{\Lambda}^{\mu}` with :math:`x = H\tan\mu` simplifies to
-
-
 
 .. math::
    :label: eq-0002
 
-   S_{road} \downarrow_{\Lambda}^{\mu}(\theta) = \left\{ \begin{aligned}
-   & 0 \mu > \mu_{0} \\
-   & \left( 1 - \frac{H}{W}\sin\theta\tan\mu \right)S_{atm} \downarrow_{\Lambda}^{\mu} \mu \leq \mu_{0}
-   \end{aligned} \right\}
-
+   S_{road} \downarrow_{\Lambda}^{\mu}(\theta) = \left\{\begin{array}{lr}
+   0 & \mu > \mu_{0} \\
+   \left( 1 - \frac{H}{W}\sin\theta\tan\mu \right)S_{atm} \downarrow_{\Lambda}^{\mu} & \mu \leq \mu_{0}
+   \end{array}\right\}.
 
 Note that the critical solar zenith angle is now
 
 .. math::
    :label: eq-0109
 
-   \mu_{0} = \tan^{- 1}\left( \frac{\frac{W}{\sin\theta}}{H} \right)
+   \mu_{0} = \tan^{- 1}\left( \frac{\frac{W}{\sin\theta}}{H} \right).
 
 Equations :eq:`eq-0107`, :eq:`eq-0108`, and :eq:`eq-0002` are integrated over all canyon orientations (:math:`0 \leq \theta \leq \frac{\pi}{2}`). The integration is done in two parts, first from :math:`\theta = 0` to :math:`\theta = \theta_{0}`, and second from :math:`\theta = \theta_{0}` to :math:`\theta = \frac{\pi}{2}`, where :math:`\theta_{0}` is the critical canyon orientation for which the road is no longer illuminated. This can be derived from Equation :eq:`eq-0109` and is
 
 .. math::
    :label: eq-0110
 
-   \theta_{0} = \sin^{- 1}\left\lbrack \min\left( \frac{W}{H\tan\mu},1 \right) \right\rbrack
+   \theta_{0} = \sin^{- 1}\left\lbrack \min\left( \frac{W}{H\tan\mu},1 \right) \right\rbrack.
 
 The integrations thus are
 
@@ -711,7 +711,7 @@ and
 .. math::
    :label: eq-0112
 
-   S_{road} \downarrow_{\Lambda}^{\mu} = \frac{4}{2\pi}\int_{0}^{\theta_{0}}{\left( 1 - \frac{H}{W}\sin\theta\tan\mu \right)S_{atm} \downarrow_{\Lambda}^{\mu}d\theta}
+   S_{road} \downarrow_{\Lambda}^{\mu} = \frac{4}{2\pi}\int_{0}^{\theta_{0}}{\left( 1 - \frac{H}{W}\sin\theta\tan\mu \right)S_{atm} \downarrow_{\Lambda}^{\mu}d\theta}.
 
 The direct beam solar radiation incident on the roof, walls and road is therefore
 
@@ -733,7 +733,7 @@ The direct beam solar radiation incident on the roof, walls and road is therefor
 .. math::
    :label: eq-0113
 
-   S_{road} \downarrow_{\Lambda}^{\mu} = S_{imprvrd} \downarrow_{\Lambda}^{\mu} = S_{prvrd} \downarrow_{\Lambda}^{\mu} = S_{atm} \downarrow_{\Lambda}^{\mu}\left\lbrack \frac{2\theta_{0}}{\pi} - \frac{2}{\pi}\frac{H}{W}\tan\mu\left( 1 - \cos\theta_{0} \right) \right\rbrack
+   S_{road} \downarrow_{\Lambda}^{\mu} = S_{imprvrd} \downarrow_{\Lambda}^{\mu} = S_{prvrd} \downarrow_{\Lambda}^{\mu} = S_{atm} \downarrow_{\Lambda}^{\mu}\left\lbrack \frac{2\theta_{0}}{\pi} - \frac{2}{\pi}\frac{H}{W}\tan\mu\left( 1 - \cos\theta_{0} \right) \right\rbrack.
 
 The direct incident solar radiation conserves energy as
 
@@ -745,7 +745,7 @@ The direct incident solar radiation conserves energy as
    \begin{split}
    S_{atm} \downarrow_{\Lambda}^{\mu} &= f_{roof}S_{roof} \downarrow_{\Lambda}^{\mu} + \left( 1 - f_{roof} \right) \\
    &\quad \left\lbrack S_{imprvrd} \downarrow_{\Lambda}^{\mu}\left( 1 - f_{prvrd} \right) + S_{prvrd} \downarrow_{\Lambda}^{\mu}f_{prvrd} + \frac{H}{W}\left( S_{sunwall} \downarrow_{\Lambda}^{\mu} + S_{shdwall} \downarrow_{\Lambda}^{\mu} \right) \right\rbrack
-   \end{split}
+   \end{split}.
 
 Note that the factor :math:`\frac{H}{W}` for the sunlit wall and shaded wall converts the flux from watts per meter squared of wall area to watts per meter squared of ground area.
 
