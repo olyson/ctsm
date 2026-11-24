@@ -822,7 +822,7 @@ and the other view factors can be deduced from conservation of energy as
 
    \Psi_{wall - wall} = 1 - \Psi_{wall - sky} - \Psi_{wall - road}
 
-The view factors are presented graphically in :numref:`fig-view-factors-hw-ratio` Note that the view factors for radiation from the walls to the other surfaces sum to one (:math:`\Psi_{wall - wall} + \Psi_{wall - road} + \Psi_{wall - sky} = 1`). Similarly, the view factors for radiation from the road to the other surfaces also sum to one (:math:`\Psi_{road - wall} + \Psi_{road - wall} + \Psi_{road - sky} = 1`). As :ref:`Harman et al. (2004) <harmanetal2004>` notes, at low height to width ratios, the road-sky view factor is close to one, the wall-wall view factor is close to zero, and the wall sky view factor is close to one half. However, at these low height to width ratios, the wall area is small compared to the road or sky area, indicating that most of the radiative exchange occurs between the road and sky, as it would for a flat surface. At height to width ratios greater than one, most of the radiative interactions take place between the two walls and the wall and the road. These view factors are consistent with those given by both :ref:`Masson (2000) <masson2000>` and :ref:`Harman et al. (2004) <harmanetal2004>`.
+The view factors are presented graphically in :numref:`fig-view-factors-hw-ratio`. Note that the view factors for radiation from the walls to the other surfaces sum to one (:math:`\Psi_{wall - wall} + \Psi_{wall - road} + \Psi_{wall - sky} = 1`). Similarly, the view factors for radiation from the road to the other surfaces also sum to one (:math:`\Psi_{road - wall} + \Psi_{road - wall} + \Psi_{road - sky} = 1`). As :ref:`Harman et al. (2004) <harmanetal2004>` notes, at low height to width ratios, the road-sky view factor is close to one, the wall-wall view factor is close to zero, and the wall sky view factor is close to one half. However, at these low height to width ratios, the wall area is small compared to the road or sky area, indicating that most of the radiative exchange occurs between the road and sky, as it would for a flat surface. At height to width ratios greater than one, most of the radiative interactions take place between the two walls and the wall and the road. These view factors are consistent with those given by both :ref:`Masson (2000) <masson2000>` and :ref:`Harman et al. (2004) <harmanetal2004>`.
 
 .. figure:: angle_factor.png
    :name: fig-view-factor-schematic
@@ -839,7 +839,7 @@ The view factors are presented graphically in :numref:`fig-view-factors-hw-ratio
 Incident diffuse solar radiation
 --------------------------------
 
-The two view factors needed to compute the incident diffuse solar radiation are :math:`\Psi_{sky - road}` (equation :eq:`eq-0119` ) and :math:`\Psi_{sky - wall}` (equation :eq:`eq-0120` ). The diffuse solar radiation incident on roof, walls and road is then
+The two view factors needed to compute the incident diffuse solar radiation are :math:`\Psi_{sky - road}` (equation :eq:`eq-0120` ) and :math:`\Psi_{sky - wall}` (equation :eq:`eq-0119` ). The diffuse solar radiation incident on roof, walls and road is then
 
 .. math::
    :label: eq-0491
@@ -1210,7 +1210,7 @@ The reflected solar radiation to the sky is added to the total reflected solar r
 
    S_{shdwall} \uparrow_{\Lambda,i + 1}^{\mu} = S_{shdwall} \uparrow_{\Lambda,i - 1}^{\mu} + S_{shdwall - sky} \uparrow_{\Lambda,i}^{\mu}
 
-The system of equations (Equations :eq:`eq-0005`-(2.85)) is iterated for :math:`i = 50` reflections or until the absorption for the :math:`i^{th}` reflection is less than a nominal amount
+The system of equations (Equations :eq:`eq-0005`-:eq:`eq-0159`) is iterated for :math:`i = 50` reflections or until the absorption for the :math:`i^{th}` reflection is less than a nominal amount
 
 .. math::
    :label: eq-0160
