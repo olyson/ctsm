@@ -824,9 +824,7 @@ and the other view factors can be deduced from conservation of energy as
 
 The view factors are presented graphically in :numref:`fig-view-factors-hw-ratio` Note that the view factors for radiation from the walls to the other surfaces sum to one (:math:`\Psi_{wall - wall} + \Psi_{wall - road} + \Psi_{wall - sky} = 1`). Similarly, the view factors for radiation from the road to the other surfaces also sum to one (:math:`\Psi_{road - wall} + \Psi_{road - wall} + \Psi_{road - sky} = 1`). As :ref:`Harman et al. (2004) <harmanetal2004>` notes, at low height to width ratios, the road-sky view factor is close to one, the wall-wall view factor is close to zero, and the wall sky view factor is close to one half. However, at these low height to width ratios, the wall area is small compared to the road or sky area, indicating that most of the radiative exchange occurs between the road and sky, as it would for a flat surface. At height to width ratios greater than one, most of the radiative interactions take place between the two walls and the wall and the road. These view factors are consistent with those given by both :ref:`Masson (2000) <masson2000>` and :ref:`Harman et al. (2004) <harmanetal2004>`.
 
-.. figure:: image6.jpeg
-   :width: 3.59171in
-   :height: 4.79167in
+.. figure:: angle_factor.png
    :name: fig-view-factor-schematic
 
    Schematic representation of angle (view) factor between infinitesimal element :math:`dA_{1}` (e.g., a point on the wall) and finite surface :math:`A_{2}` (e.g., the sky) (after :ref:`Sparrow and Cess (1978) <sparrowandcess1978>`).
