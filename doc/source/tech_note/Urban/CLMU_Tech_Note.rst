@@ -844,22 +844,22 @@ The two view factors needed to compute the incident diffuse solar radiation are 
 .. math::
    :label: eq-0491
 
-   S_{roof} \downarrow_{\Lambda} = S_{atm} \downarrow_{\Lambda}
+   S_{roof} \downarrow_{\Lambda} = S_{atm} \downarrow_{\Lambda},
 
 .. math::
    :label: eq-0492
 
-   S_{imprvrd} \downarrow_{\Lambda} = S_{prvrd} \downarrow_{\Lambda} = S_{atm} \downarrow_{\Lambda}\Psi_{sky - road}
+   S_{imprvrd} \downarrow_{\Lambda} = S_{prvrd} \downarrow_{\Lambda} = S_{atm} \downarrow_{\Lambda}\Psi_{sky - road},
 
 .. math::
    :label: eq-s_shdwall_downlambda
 
-   S_{shdwall} \downarrow_{\Lambda} = S_{atm} \downarrow_{\Lambda}\Psi_{sky - wall}
+   S_{shdwall} \downarrow_{\Lambda} = S_{atm} \downarrow_{\Lambda}\Psi_{sky - wall},
 
 .. math::
    :label: eq-0122
 
-   S_{sunwall} \downarrow_{\Lambda} = S_{atm} \downarrow_{\Lambda}\Psi_{sky - wall}
+   S_{sunwall} \downarrow_{\Lambda} = S_{atm} \downarrow_{\Lambda}\Psi_{sky - wall}.
 
 The diffuse incident solar radiation conserves energy as
 
@@ -871,7 +871,7 @@ The diffuse incident solar radiation conserves energy as
    \begin{split}
    S_{atm} \downarrow_{\Lambda} &= f_{roof}S_{roof} \downarrow_{\Lambda} + \left( 1 - f_{roof} \right) \\
    &\quad \left\lbrack S_{imprvrd} \downarrow_{\Lambda}\left( 1 - f_{prvrd} \right) + S_{prvrd} \downarrow_{\Lambda}f_{prvrd} + \frac{H}{W}\left( S_{sunwall} \downarrow_{\Lambda} + S_{shdwall} \downarrow_{\Lambda} \right) \right\rbrack
-   \end{split}
+   \end{split}.
 
 .. _sec-absorbed-and-reflected-solar-radiatio:
 
