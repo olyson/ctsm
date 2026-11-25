@@ -898,7 +898,7 @@ The direct and diffuse net (absorbed) and reflected solar radiation for the roof
 .. math::
    :label: eq-0126
 
-   S_{roof} \uparrow_{\Lambda} = S_{roof} \downarrow_{\Lambda}\left( \alpha_{roof,\Lambda} \right)
+   S_{roof} \uparrow_{\Lambda} = S_{roof} \downarrow_{\Lambda}\left( \alpha_{roof,\Lambda} \right).
 
 The net (absorbed) and reflected solar radiation for walls and road and the reflected solar radiation to the sky are determined numerically by allowing for multiple reflections until a convergence criteria is met to ensure radiation is conserved. The reflected radiation from each urban surface is absorbed and re-reflected by the other urban surfaces. For example, the radiation scattered from the sunlit wall to the road, the shaded wall, and the sky depends on the view factors :math:`\Psi_{wall - road}`, :math:`\Psi_{wall - wall}`, and :math:`\Psi_{wall - sky}`, respectively (:numref:`fig-view-factors-hw-ratio`). The multiple reflections are accounted for in five steps:
 
@@ -1047,45 +1047,37 @@ The initial reflected solar radiation is distributed to sky, walls, and road acc
 
 The direct beam solar radiation absorbed by each urban surface after the :math:`i^{th}` reflection (steps 2 and 3) is
 
-
-
 .. math::
    :label: eq-0005
 
-   {\overrightarrow{S}}_{imprvrd,\Lambda,i}^{\mu} = {\overrightarrow{S}}_{imprvrd,\Lambda,i - 1}^{\mu} +
-   \left( 1 - \alpha_{imprvrd,\Lambda}^{\mu} \right)\left( S_{sunwall - road} \uparrow_{\Lambda,i - 1}^{\mu} + S_{shdwall - road} \uparrow_{\Lambda,i - 1}^{\mu} \right)\frac{H}{W}
-
-
-
-
+   \begin{split}
+   {\overrightarrow{S}}_{imprvrd,\Lambda,i}^{\mu} &= {\overrightarrow{S}}_{imprvrd,\Lambda,i - 1}^{\mu} + \\
+   &\quad \left( 1 - \alpha_{imprvrd,\Lambda}^{\mu} \right)\left( S_{sunwall - road} \uparrow_{\Lambda,i - 1}^{\mu} + S_{shdwall - road} \uparrow_{\Lambda,i - 1}^{\mu} \right)\frac{H}{W}
+   \end{split}
 
 .. math::
    :label: eq-0006
 
-   {\overrightarrow{S}}_{prvrd,\Lambda,i}^{\mu} = {\overrightarrow{S}}_{prvrd,\Lambda,i - 1}^{\mu} +
-   \left( 1 - \alpha_{prvrd,\Lambda}^{\mu} \right)\left( S_{sunwall - road} \uparrow_{\Lambda,i - 1}^{\mu} + S_{shdwall - road} \uparrow_{\Lambda,i - 1}^{\mu} \right)\frac{H}{W}
-
-
-
-
+   \begin{split}
+   {\overrightarrow{S}}_{prvrd,\Lambda,i}^{\mu} &= {\overrightarrow{S}}_{prvrd,\Lambda,i - 1}^{\mu} + \\
+   &\quad \left( 1 - \alpha_{prvrd,\Lambda}^{\mu} \right)\left( S_{sunwall - road} \uparrow_{\Lambda,i - 1}^{\mu} + S_{shdwall - road} \uparrow_{\Lambda,i - 1}^{\mu} \right)\frac{H}{W}
+   \end{split}
 
 .. math::
    :label: eq-0007
 
-   {\overrightarrow{S}}_{sunwall,\Lambda,i}^{\mu} = {\overrightarrow{S}}_{sunwall,\Lambda,i - 1}^{\mu} +
-   \left( 1 - \alpha_{sunwall,\Lambda}^{\mu} \right)\left( \frac{S_{road - sunwall} \uparrow_{\Lambda,i - 1}^{\mu}}{\frac{H}{W}} + S_{shdwall - sunwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)
-
-
-
-
+   \begin{split}
+   {\overrightarrow{S}}_{sunwall,\Lambda,i}^{\mu} &= {\overrightarrow{S}}_{sunwall,\Lambda,i - 1}^{\mu} + \\
+   &\quad \left( 1 - \alpha_{sunwall,\Lambda}^{\mu} \right)\left( \frac{S_{road - sunwall} \uparrow_{\Lambda,i - 1}^{\mu}}{H/W} + S_{shdwall - sunwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)
+   \end{split}
 
 .. math::
    :label: eq-0008
 
-   {\overrightarrow{S}}_{shdwall,\Lambda,i}^{\mu} = {\overrightarrow{S}}_{shdwall,\Lambda,i - 1}^{\mu} +
-   \left( 1 - \alpha_{shdwall,\Lambda}^{\mu} \right)\left( \frac{S_{road - shdwall} \uparrow_{\Lambda,i - 1}^{\mu}}{\frac{H}{W}} + S_{sunwall - shdwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)
-
-
+   \begin{split}
+   {\overrightarrow{S}}_{shdwall,\Lambda,i}^{\mu} &= {\overrightarrow{S}}_{shdwall,\Lambda,i - 1}^{\mu} + \\
+   &\quad \left( 1 - \alpha_{shdwall,\Lambda}^{\mu} \right)\left( \frac{S_{road - shdwall} \uparrow_{\Lambda,i - 1}^{\mu}}{H/W} + S_{sunwall - shdwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)
+   \end{split}
 
 The radiation from the walls to the road (:math:`S_{sunwall - road} \uparrow_{\Lambda,i - 1}^{\mu}`,\ :math:`S_{shdwall - road} \uparrow_{\Lambda,i - 1}^{\mu}`) is in W m\ :sup:`-2` of wall area and must be converted to W m\ :sup:`-2` of road area by multiplying by the height to width ratio. Similarly, the radiation from the road to the walls must be converted from W m\ :sup:`-2` of road area to W m\ :sup:`-2` of wall area by dividing by the height to width ratio. The direct beam solar radiation reflected by each urban surface after the :math:`i^{th}` reflection is distributed to sky, road, and walls (step 4) according to
 
@@ -1161,32 +1153,32 @@ The radiation from the walls to the road (:math:`S_{sunwall - road} \uparrow_{\L
 .. math::
    :label: eq-0150
 
-   S_{sunwall - sky} \uparrow_{\Lambda,i}^{\mu} = \alpha_{sunwall,\Lambda}^{\mu}\left( \frac{S_{road - sunwall} \uparrow_{\Lambda,i - 1}^{\mu}}{\frac{H}{W}} + S_{shdwall - sunwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - sky}
+   S_{sunwall - sky} \uparrow_{\Lambda,i}^{\mu} = \alpha_{sunwall,\Lambda}^{\mu}\left( \frac{S_{road - sunwall} \uparrow_{\Lambda,i - 1}^{\mu}}{H/W} + S_{shdwall - sunwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - sky}
 
 .. math::
    :label: eq-0151
 
-   S_{sunwall - road} \uparrow_{\Lambda,i}^{\mu} = \alpha_{sunwall,\Lambda}^{\mu}\left( \frac{S_{road - sunwall} \uparrow_{\Lambda,i - 1}^{\mu}}{\frac{H}{W}} + S_{shdwall - sunwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - road}
+   S_{sunwall - road} \uparrow_{\Lambda,i}^{\mu} = \alpha_{sunwall,\Lambda}^{\mu}\left( \frac{S_{road - sunwall} \uparrow_{\Lambda,i - 1}^{\mu}}{H/W} + S_{shdwall - sunwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - road}
 
 .. math::
    :label: eq-0152
 
-   S_{sunwall - shdwall} \uparrow_{\Lambda,i}^{\mu} = \alpha_{sunwall,\Lambda}^{\mu}\left( \frac{S_{road - sunwall} \uparrow_{\Lambda,i - 1}^{\mu}}{\frac{H}{W}} + S_{shdwall - sunwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - wall}
+   S_{sunwall - shdwall} \uparrow_{\Lambda,i}^{\mu} = \alpha_{sunwall,\Lambda}^{\mu}\left( \frac{S_{road - sunwall} \uparrow_{\Lambda,i - 1}^{\mu}}{H/W} + S_{shdwall - sunwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - wall}
 
 .. math::
    :label: eq-0153
 
-   S_{shdwall - sky} \uparrow_{\Lambda,i}^{\mu} = \alpha_{shdwall,\Lambda}^{\mu}\left( \frac{S_{road - shdwall} \uparrow_{\Lambda,i - 1}^{\mu}}{\frac{H}{W}} + S_{sunwall - shdwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - sky}
+   S_{shdwall - sky} \uparrow_{\Lambda,i}^{\mu} = \alpha_{shdwall,\Lambda}^{\mu}\left( \frac{S_{road - shdwall} \uparrow_{\Lambda,i - 1}^{\mu}}{H/W} + S_{sunwall - shdwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - sky}
 
 .. math::
    :label: eq-0154
 
-   S_{shdwall - road} \uparrow_{\Lambda,i}^{\mu} = \alpha_{shdwall,\Lambda}^{\mu}\left( \frac{S_{road - shdwall} \uparrow_{\Lambda,i - 1}^{\mu}}{\frac{H}{W}} + S_{sunwall - shdwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - road}
+   S_{shdwall - road} \uparrow_{\Lambda,i}^{\mu} = \alpha_{shdwall,\Lambda}^{\mu}\left( \frac{S_{road - shdwall} \uparrow_{\Lambda,i - 1}^{\mu}}{H/W} + S_{sunwall - shdwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - road}
 
 .. math::
    :label: eq-0155
 
-   S_{shdwall - sunwall} \uparrow_{\Lambda,i}^{\mu} = \alpha_{shdwall,\Lambda}^{\mu}\left( \frac{S_{road - shdwall} \uparrow_{\Lambda,i - 1}^{\mu}}{\frac{H}{W}} + S_{sunwall - shdwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - wall}
+   S_{shdwall - sunwall} \uparrow_{\Lambda,i}^{\mu} = \alpha_{shdwall,\Lambda}^{\mu}\left( \frac{S_{road - shdwall} \uparrow_{\Lambda,i - 1}^{\mu}}{H/W} + S_{sunwall - shdwall} \uparrow_{\Lambda,i - 1}^{\mu} \right)\Psi_{wall - wall}
 
 The reflected solar radiation to the sky is added to the total reflected solar radiation (step 5) for each urban surface as
 
@@ -1253,23 +1245,21 @@ The total direct beam and diffuse solar radiation reflected by the urban canyon 
 
 while the total absorbed is
 
-
-
 .. math::
    :label: eq-0015
 
-   {\overrightarrow{S}}_{uc,\Lambda}^{\mu} = {\overrightarrow{S}}_{imprvrd,\Lambda,i = n}^{\mu}\left( 1 - f_{prvrd} \right) + {\overrightarrow{S}}_{prvrd,\Lambda,i = n}^{\mu}f_{prvrd}
-   + \left( {\overrightarrow{S}}_{sunwall,\Lambda,i = n}^{\mu} + {\overrightarrow{S}}_{shdwall,\Lambda,i = n}^{\mu} \right)\frac{H}{W}
-
-
-
+   \begin{split}
+   {\overrightarrow{S}}_{uc,\Lambda}^{\mu} &= {\overrightarrow{S}}_{imprvrd,\Lambda,i = n}^{\mu}\left( 1 - f_{prvrd} \right) + {\overrightarrow{S}}_{prvrd,\Lambda,i = n}^{\mu}f_{prvrd} \\
+   &\quad + \left( {\overrightarrow{S}}_{sunwall,\Lambda,i = n}^{\mu} + {\overrightarrow{S}}_{shdwall,\Lambda,i = n}^{\mu} \right)\frac{H}{W}
+   \end{split}
 
 .. math::
    :label: eq-0016
 
-   {\overrightarrow{S}}_{uc,\Lambda} = {\overrightarrow{S}}_{imprvrd,\Lambda,i = n}\left( 1 - f_{prvrd} \right) + {\overrightarrow{S}}_{prvrd,\Lambda,i = n}f_{prvrd}
-   + \left( {\overrightarrow{S}}_{sunwall,\Lambda,i = n} + {\overrightarrow{S}}_{shdwall,\Lambda,i = n} \right)\frac{H}{W}
-
+   \begin{split}
+   {\overrightarrow{S}}_{uc,\Lambda} &= {\overrightarrow{S}}_{imprvrd,\Lambda,i = n}\left( 1 - f_{prvrd} \right) + {\overrightarrow{S}}_{prvrd,\Lambda,i = n}f_{prvrd} \\
+   &\quad + \left( {\overrightarrow{S}}_{sunwall,\Lambda,i = n} + {\overrightarrow{S}}_{shdwall,\Lambda,i = n} \right)\frac{H}{W}
+   \end{split}
 
 Solar radiation in the urban canyon is conserved as
 
